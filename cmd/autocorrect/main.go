@@ -43,6 +43,10 @@ var cmdCommonflags = []cli.Flag{
 		Value: "",
 		Usage: "输出到哪个文件 `FILE`",
 	},
+	cli.BoolFlag{
+		Name:  "w",
+		Usage: "将结果直接写入源文件，而不是输出到标准输出，如果提供了 outfile 选项，忽略此选项",
+	},
 }
 
 var action = func(c *cli.Context) error {
@@ -160,6 +164,20 @@ func output(ctx *cli.Context, content string) error {
 		_, err = file.WriteString(content)
 
 		return err
+	}
+
+	if ctx.IsSet("w") {
+		if ctx.NArg() > 0 {
+			arg := ctx.Args().First()
+			if !exits(arg) {
+				fmt.Println(content)
+				return nil
+			}
+
+			ioutil.WriteFile(arg, []byte(content), 0666)
+
+			return nil
+		}
 	}
 
 	fmt.Println(content)

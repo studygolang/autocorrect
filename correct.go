@@ -1,3 +1,5 @@
+// BUG(polaris): 一个段落英文开头的大小写转换有问题，比如 go中文网 中的 go 不会转为 Go。
+
 package autocorrect
 
 import (
