@@ -19,7 +19,7 @@ var (
 func main() {
 	app := cli.NewApp()
 	app.Name = "autocorrect"
-	app.Usage = "自动给中英文之间加入合理的空格并纠正专用名词大小写"
+	app.Usage = "自动给中英文之间加入合理的空格并纠正专用名词大小写。支持处理某个目录下所有文件。"
 	app.Version = fmt.Sprintf("%s (%s)", version, build)
 	app.Copyright = "(c) 2018 studygolang.com"
 	app.Authors = []cli.Author{
@@ -45,7 +45,7 @@ var cmdCommonflags = []cli.Flag{
 	},
 	cli.BoolFlag{
 		Name:  "w",
-		Usage: "将结果直接写入源文件，而不是输出到标准输出，如果提供了 outfile 选项，忽略此选项",
+		Usage: "将结果直接写入源文件，而不是输出到标准输出，如果提供了 outfile 选项，忽略此选项；如果要处理的是一个目录，该选项无效，直接写入源文件",
 	},
 }
 
@@ -95,7 +95,7 @@ var commands = []cli.Command{
 	},
 }
 
-func processStd(ctx *cli.Context) (string, error) {
+func process(ctx *cli.Context, callback func(string) string) error {
 	content := ""
 
 	if ctx.NArg() > 0 {
@@ -103,53 +103,38 @@ func processStd(ctx *cli.Context) (string, error) {
 		if !exits(arg) {
 			content = arg
 		} else {
-			b, err := ioutil.ReadFile(arg)
-			if err != nil {
-				return "", err
+			if IsDir(arg) {
+				return processFiles(ctx, arg, callback)
+			} else {
+				b, err := ioutil.ReadFile(arg)
+				if err != nil {
+					return err
+				}
+				content = string(b)
 			}
-			content = string(b)
 		}
-
-		return content, nil
+	} else {
+		scanner := bufio.NewScanner(os.Stdin)
+		for scanner.Scan() {
+			line := scanner.Text()
+			content += line + "\n"
+		}
 	}
 
-	scanner := bufio.NewScanner(os.Stdin)
-	for scanner.Scan() {
-		line := scanner.Text()
-		content += line + "\n"
-	}
-
-	return content, nil
+	content = callback(content)
+	return output(ctx, content)
 }
 
 func processSpace(ctx *cli.Context) error {
-	content, err := processStd(ctx)
-	if err != nil {
-		return err
-	}
-
-	content = autocorrect.AutoSpace(content)
-	return output(ctx, content)
+	return process(ctx, autocorrect.AutoSpace)
 }
 
 func processCorrect(ctx *cli.Context) error {
-	content, err := processStd(ctx)
-	if err != nil {
-		return err
-	}
-
-	content = autocorrect.AutoCorrect(content)
-	return output(ctx, content)
+	return process(ctx, autocorrect.AutoCorrect)
 }
 
 func processConvert(ctx *cli.Context) error {
-	content, err := processStd(ctx)
-	if err != nil {
-		return err
-	}
-
-	content = autocorrect.Convert(content)
-	return output(ctx, content)
+	return process(ctx, autocorrect.Convert)
 }
 
 func output(ctx *cli.Context, content string) error {
