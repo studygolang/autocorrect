@@ -63,5 +63,5 @@ func isLatin(size int) bool {
 }
 
 func isAllowSpace(r rune) bool {
-	return !unicode.IsSpace(r) && !strings.ContainsRune("，。；「」：《》『』、[]（）*_", r)
+	return !unicode.IsSpace(r) && !unicode.IsPunct(r)
 }
