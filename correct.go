@@ -39,7 +39,7 @@ func AutoCorrect(str string) string {
 	return replacer.Replace(str)
 }
 
-// Convert 限制性 AutoSpace，然后执行 AutoCorrect
+// Convert 先执行 AutoSpace，然后执行 AutoCorrect
 func Convert(str string) string {
 	return AutoCorrect(AutoSpace(str))
 }
