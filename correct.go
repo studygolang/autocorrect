@@ -21,7 +21,7 @@ func AddDict(dict map[string]string) {
 func AutoSpace(str string) string {
 	out := ""
 	for _, r := range str {
-		out = addSpaceAtBoundry(out, r)
+		out = addSpaceAtBoundary(out, r)
 	}
 
 	return out
@@ -44,7 +44,7 @@ func Convert(str string) string {
 	return AutoCorrect(AutoSpace(str))
 }
 
-func addSpaceAtBoundry(prefix string, nextChar rune) string {
+func addSpaceAtBoundary(prefix string, nextChar rune) string {
 	if len(prefix) == 0 {
 		return string(nextChar)
 	}
