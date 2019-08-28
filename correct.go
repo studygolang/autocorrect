@@ -31,8 +31,8 @@ func AutoSpace(str string) string {
 func AutoCorrect(str string) string {
 	oldNews := make([]string, 2*(len(dicts)+len(otherDicts)))
 	for from, to := range dicts {
-		oldNews = append(oldNews, " "+from)
-		oldNews = append(oldNews, " "+to)
+		oldNews = append(oldNews, " "+from+" ")
+		oldNews = append(oldNews, " "+to+" ")
 	}
 
 	replacer := strings.NewReplacer(oldNews...)
@@ -41,7 +41,7 @@ func AutoCorrect(str string) string {
 
 // Convert 先执行 AutoSpace，然后执行 AutoCorrect
 func Convert(str string) string {
-	return AutoCorrect(AutoSpace(str))
+	return AutoSpace(AutoCorrect(str))
 }
 
 func addSpaceAtBoundary(prefix string, nextChar rune) string {
